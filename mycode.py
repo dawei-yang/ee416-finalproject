@@ -14,35 +14,63 @@ import os
 
 # TODO: Construct your data in the following baseline structure: 1) ./Dataset/Train/image/, 2) ./Dataset/Train/label, 3) ./Dataset/Test/image, and 4) ./Dataset/Test/label
 class DataGenerator:
-    def __init__(self):
-        dataFolders = ["./Test", "./Test2"]
+    def __init__(self, fold):
+        dataFolders = ["./Covid"]
         index = 0
-        with open("Dataset/Train/label/trainingLabels.csv", "w") as f:
-            for datasetName in dataFolders:
-                for folderName in os.listdir(datasetName):
-                    print("folder {}".format(folderName))
-                    if not folderName.startswith('.'):
-                        for imageName in os.listdir(os.path.join(datasetName, folderName)):
-                            print("image {}".format(imageName))     
+        os.makedirs("./Dataset/Train/image", exist_ok=True)
+        os.makedirs("./Dataset/Train/label", exist_ok=True)
+        os.makedirs("./Dataset/Test/image", exist_ok=True)
+        os.makedirs("./Dataset/Test/label", exist_ok=True)
+   
+        f_train = open("Dataset/Train/label/trainLabels.csv", "w")
+        f_test = open("Dataset/Test/label/testLabels.csv", "w")    
+        for datasetName in dataFolders:
+            for folderName in os.listdir(datasetName):
+                if not folderName.startswith('.'):
+                    number_of_files = len(os.listdir(os.path.join(datasetName, folderName)))
+                    print("number of files: {}".format(number_of_files))
+                    count = 0
+                    for imageName in os.listdir(os.path.join(datasetName, folderName)):
+                        if count >= number_of_files/5:
                             src = os.path.join(datasetName, folderName, imageName)
-                            print("src {}".format(src))
                             img = cv.imread(src)
                             dist = os.path.join("Dataset/Train/image", str(index)+".png")
                             cv.imwrite(dist, img)
-                            f.write(str(index) + ", 0, " + folderName + "\n")
+                            f_train.write(str(index) + ", 0, " + folderName + "\n")
                             index += 1
                             img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
                             cv.imwrite(os.path.join("Dataset/Train/image", str(index) + ".png"), img90)
-                            f.write(str(index) + ", 90, " + folderName + "\n")
+                            f_train.write(str(index) + ", 90, " + folderName + "\n")
                             index += 1
                             img180 = cv.rotate(img, cv.ROTATE_180)
                             cv.imwrite(os.path.join("Dataset/Train/image", str(index) + ".png"), img180)
-                            f.write(str(index) + ", 180, " + folderName + "\n")
+                            f_train.write(str(index) + ", 180, " + folderName + "\n")
                             index += 1
                             img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
                             cv.imwrite(os.path.join("Dataset/Train/image", str(index) + ".png"), img270)
-                            f.write(str(index) + ", 270, " + folderName + "\n")
-                            index += 1    
+                            f_train.write(str(index) + ", 270, " + folderName + "\n")
+                            index += 1
+                            count += 1
+                        else:
+                            src = os.path.join(datasetName, folderName, imageName)
+                            img = cv.imread(src)
+                            dist = os.path.join("Dataset/Test/image", str(index)+".png")
+                            cv.imwrite(dist, img)
+                            f_test.write(str(index) + ", 0, " + folderName + "\n")
+                            index += 1
+                            img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
+                            cv.imwrite(os.path.join("Dataset/Test/image", str(index) + ".png"), img90)
+                            f_test.write(str(index) + ", 90, " + folderName + "\n")
+                            index += 1
+                            img180 = cv.rotate(img, cv.ROTATE_180)
+                            cv.imwrite(os.path.join("Dataset/Test/image", str(index) + ".png"), img180)
+                            f_test.write(str(index) + ", 180, " + folderName + "\n")
+                            index += 1
+                            img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
+                            cv.imwrite(os.path.join("Dataset/Test/image", str(index) + ".png"), img270)
+                            f_test.write(str(index) + ", 270, " + folderName + "\n")
+                            index += 1
+                            count += 1
 
 class DataSet:
     def __init__(self, root):                  
@@ -83,7 +111,7 @@ class DataSet:
 print("Loading datasets...")
 
 # Data path
-DataGenerator()
+DataGenerator(0)
 DATA_train_path = DataSet('./Dataset/Train')
 DATA_test_path = DataSet('./Dataset/Test')
 
