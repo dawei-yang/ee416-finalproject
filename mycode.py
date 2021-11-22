@@ -36,48 +36,49 @@ class DataGenerator:
                     count = 0
 
                     for imageName in os.listdir(os.path.join(datasetName, folderName)):
-                        if count >= number_of_files/5:
-                            src = os.path.join(datasetName, folderName, imageName)
-                            img = cv.imread(src)
-                            img = cv.resize(img, (360, 360))
-                            dist = os.path.join("Dataset/Train/image/data", str(train_index)+".png")
-                            cv.imwrite(dist, img)
-                            f_train.write(str(dataFolders.index(datasetName)) + "\n")
-                            train_index += 1
-                            img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img90)
-                            f_train.write(str(dataFolders.index(datasetName))  + "\n")
-                            train_index += 1
-                            img180 = cv.rotate(img, cv.ROTATE_180)
-                            cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img180)
-                            f_train.write(str(dataFolders.index(datasetName))  + "\n")
-                            train_index += 1
-                            img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img270)
-                            f_train.write(str(dataFolders.index(datasetName))  + "\n")
-                            train_index += 1
-                            count += 1
-                        else:
-                            src = os.path.join(datasetName, folderName, imageName)
-                            img = cv.imread(src)
-                            img = cv.resize(img, (360, 360))
-                            dist = os.path.join("Dataset/Test/image/data", str(test_index)+".png")
-                            cv.imwrite(dist, img)
-                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
-                            test_index += 1
-                            img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img90)
-                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
-                            test_index += 1
-                            img180 = cv.rotate(img, cv.ROTATE_180)
-                            cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img180)
-                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
-                            test_index += 1
-                            img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img270)
-                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
-                            test_index += 1
-                            count += 1
+                        if imageName.endswith(".png"):
+                            if count >= number_of_files/5:
+                                src = os.path.join(datasetName, folderName, imageName)
+                                img = cv.imread(src)
+                                img = cv.resize(img, (360, 360))
+                                dist = os.path.join("Dataset/Train/image/data", str(train_index)+".png")
+                                cv.imwrite(dist, img)
+                                f_train.write(str(dataFolders.index(datasetName)) + "\n")
+                                train_index += 1
+                                img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
+                                cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img90)
+                                f_train.write(str(dataFolders.index(datasetName))  + "\n")
+                                train_index += 1
+                                img180 = cv.rotate(img, cv.ROTATE_180)
+                                cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img180)
+                                f_train.write(str(dataFolders.index(datasetName))  + "\n")
+                                train_index += 1
+                                img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
+                                cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img270)
+                                f_train.write(str(dataFolders.index(datasetName))  + "\n")
+                                train_index += 1
+                                count += 1
+                            else:
+                                src = os.path.join(datasetName, folderName, imageName)
+                                img = cv.imread(src)
+                                img = cv.resize(img, (360, 360))
+                                dist = os.path.join("Dataset/Test/image/data", str(test_index)+".png")
+                                cv.imwrite(dist, img)
+                                f_test.write(str(dataFolders.index(datasetName))  + "\n")
+                                test_index += 1
+                                img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
+                                cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img90)
+                                f_test.write(str(dataFolders.index(datasetName))  + "\n")
+                                test_index += 1
+                                img180 = cv.rotate(img, cv.ROTATE_180)
+                                cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img180)
+                                f_test.write(str(dataFolders.index(datasetName))  + "\n")
+                                test_index += 1
+                                img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
+                                cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img270)
+                                f_test.write(str(dataFolders.index(datasetName))  + "\n")
+                                test_index += 1
+                                count += 1
 
 class DataSet:
     def __init__(self, root):                  
@@ -138,15 +139,10 @@ DATA_test_path = DataSet('./Dataset/Test')
     print("label of [{}] is {}".format(i, label)) """
 
 
-""" DATA_train = datasets.ImageFolder(root='./Dataset/Train', transform=MyTransform)
-DATA_test = datasets.ImageFolder(root='./Dataset/Test', transform=MyTransform) """
-
-print("Done!")
-
 # Create dataloaders
 # TODO: Experiment with different batch sizes
-trainloader = DataLoader(DATA_train_path, batch_size=1, shuffle=True)
-testloader = DataLoader(DATA_test_path, batch_size=1, shuffle=True)
+trainloader = DataLoader(DATA_train_path, batch_size=8, shuffle=True)
+testloader = DataLoader(DATA_test_path, batch_size=8, shuffle=True)
 
 class Network(nn.Module):
     def __init__(self):
@@ -188,7 +184,7 @@ model = Network().to(device)
 criterion = nn.CrossEntropyLoss() # Specify the loss layer (note: CrossEntropyLoss already includes LogSoftMax())
 # TODO: Modify the line below, experiment with different optimizers and parameters (such as learning rate)
 optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001, weight_decay=0.0001) # Specify optimizer and assign trainable parameters to it, weight_decay is L2 regularization strength (default: lr=1e-2, weight_decay=1e-4)
-num_epochs = 1 # TODO: Choose an appropriate number of training epochs
+num_epochs = 10 # TODO: Choose an appropriate number of training epochs
 
 def train(model, loader, num_epoch = num_epochs): # Train the model
     print("Start training...")
@@ -215,14 +211,13 @@ def evaluate(model, loader): # Evaluate accuracy on validation / test set
             batch = batch.to(device)
             label = label.to(device)
             pred = model(batch)
-            print("label{}".format(label))
-            print("predict {}".format(np.argmax(pred)))
+            """ print("label{}".format(label))
+            print("predict {}".format(np.argmax(pred))) """
             correct += (torch.argmax(pred,dim=1)==label).sum().item()
     acc = correct/len(loader.dataset)
     print("length: {}, correct: {}".format(len(loader.dataset), correct))
     print("Evaluation accuracy: {}".format(acc))
     return acc
-    
 
 
 train(model, trainloader, num_epochs)
