@@ -130,7 +130,7 @@ class DataSet:
 print("Loading datasets...")
 
 # Data path
-# DataGenerator(0)
+DataGenerator(0)
 DATA_train_path = DataSet('./Dataset/Train')
 DATA_test_path = DataSet('./Dataset/Test')
 
