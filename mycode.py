@@ -6,87 +6,102 @@ import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms, utils, models
 from torch.utils.data import Dataset, Subset, DataLoader, random_split
 
 import cv2 as cv
 import os
+import pandas as pd
 
 # TODO: Construct your data in the following baseline structure: 1) ./Dataset/Train/image/, 2) ./Dataset/Train/label, 3) ./Dataset/Test/image, and 4) ./Dataset/Test/label
 class DataGenerator:
     def __init__(self, fold):
-        dataFolders = ["Covid"] # ["Covid", "Healthy", "Others"]
+        dataFolders = ["Covid", "Healthy", "Others"]
         train_index = 0
         test_index = 0
-        os.makedirs("./Dataset/Train/image", exist_ok=True)
+        os.makedirs("./Dataset/Train/image/data", exist_ok=True)
         os.makedirs("./Dataset/Train/label", exist_ok=True)
-        os.makedirs("./Dataset/Test/image", exist_ok=True)
+        os.makedirs("./Dataset/Test/image/data", exist_ok=True)
         os.makedirs("./Dataset/Test/label", exist_ok=True)
    
-        f_train = open("Dataset/Train/label/trainLabels.txt", "w")
-        f_test = open("Dataset/Test/label/testLabels.txt", "w")   
-        f_train.write("name status \n") #0: Covid, 1: Healthy, 2: Others 
+        f_train = open("Dataset/Train/label/trainLabels.csv", "w")
+        f_test = open("Dataset/Test/label/testLabels.csv", "w")   
+        f_train.write("index\n")#0: Covid, 1: Healthy, 2: Others 
+        f_test.write("index\n")
         for datasetName in dataFolders:
             for folderName in os.listdir(datasetName):
                 if not folderName.startswith('.'):
                     number_of_files = len(os.listdir(os.path.join(datasetName, folderName)))
-                    print("folder {} has files: {}".format(folderName, number_of_files))
+                    print("{} folder {} has files: {}".format(datasetName, folderName, number_of_files))
                     count = 0
 
                     for imageName in os.listdir(os.path.join(datasetName, folderName)):
                         if count >= number_of_files/5:
                             src = os.path.join(datasetName, folderName, imageName)
                             img = cv.imread(src)
-                            dist = os.path.join("Dataset/Train/image", str(train_index)+".png")
+                            img = cv.resize(img, (360, 360))
+                            dist = os.path.join("Dataset/Train/image/data", str(train_index)+".png")
                             cv.imwrite(dist, img)
-                            f_train.write(str(train_index) + ".png " + str(dataFolders.index(datasetName)) + "\n")
+                            f_train.write(str(dataFolders.index(datasetName)) + "\n")
                             train_index += 1
                             img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Train/image", str(train_index) + ".png"), img90)
-                            f_train.write(str(train_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img90)
+                            f_train.write(str(dataFolders.index(datasetName))  + "\n")
                             train_index += 1
                             img180 = cv.rotate(img, cv.ROTATE_180)
-                            cv.imwrite(os.path.join("Dataset/Train/image", str(train_index) + ".png"), img180)
-                            f_train.write(str(train_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img180)
+                            f_train.write(str(dataFolders.index(datasetName))  + "\n")
                             train_index += 1
                             img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Train/image", str(train_index) + ".png"), img270)
-                            f_train.write(str(train_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            cv.imwrite(os.path.join("Dataset/Train/image/data", str(train_index) + ".png"), img270)
+                            f_train.write(str(dataFolders.index(datasetName))  + "\n")
                             train_index += 1
                             count += 1
                         else:
                             src = os.path.join(datasetName, folderName, imageName)
                             img = cv.imread(src)
-                            dist = os.path.join("Dataset/Test/image", str(test_index)+".png")
+                            img = cv.resize(img, (360, 360))
+                            dist = os.path.join("Dataset/Test/image/data", str(test_index)+".png")
                             cv.imwrite(dist, img)
-                            f_test.write(str(test_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
                             test_index += 1
                             img90 = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Test/image", str(test_index) + ".png"), img90)
-                            f_test.write(str(test_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img90)
+                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
                             test_index += 1
                             img180 = cv.rotate(img, cv.ROTATE_180)
-                            cv.imwrite(os.path.join("Dataset/Test/image", str(test_index) + ".png"), img180)
-                            f_test.write(str(test_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img180)
+                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
                             test_index += 1
                             img270 = cv.rotate(img, cv.ROTATE_90_COUNTERCLOCKWISE)
-                            cv.imwrite(os.path.join("Dataset/Test/image", str(test_index) + ".png"), img270)
-                            f_test.write(str(test_index) + ".png " + str(dataFolders.index(datasetName))  + "\n")
+                            cv.imwrite(os.path.join("Dataset/Test/image/data", str(test_index) + ".png"), img270)
+                            f_test.write(str(dataFolders.index(datasetName))  + "\n")
                             test_index += 1
                             count += 1
 
 class DataSet:
     def __init__(self, root):                  
-        # image = cv.imread("Covid/Patient/1.png")
-        """ cv.imshow("image", image)
-        cv.waitKey(0)
-        cv.destroyAllWindows() """
-
         print("root: {}".format(root))
- 
         self.ROOT = root
-        self.images = read_images(root + "/image")
-        self.labels = read_labels(root + "/label")
+        # self.images = read_images(root + "/image")
+        # self.labels = read_labels(root + "/label")
+        # print(os.listdir(root + "/image"))
+        MyTransform = transforms.Compose([
+            # transforms.Grayscale(num_output_channels=1), # Convert image to grayscale
+            transforms.ToTensor(), # Transform from [0,255] uint8 to [0,1] float
+            transforms.Normalize([0.485], [0.224]) # TODO: Normalize to zero mean and unit variance with appropriate parameters
+        ])
+        self.images = datasets.ImageFolder(root = root + "/image", transform = MyTransform)
+        if root == "./Dataset/Train":
+            self.labels = pd.read_csv(root + "/label/trainLabels.csv")
+        else: 
+            self.labels = pd.read_csv(root + "/label/testLabels.csv")
+        
+        print("images: {}".format(len(self.images)))
+        print("labels: {}".format(len(self.labels)))
+        """ plt.imshow(self.images[0][0].permute(1, 2, 0))
+        plt.show() """
+
         """ self.ROOT = root
         self.images = datasets.ImageFolder(root = root + "/image", transform = transforms.ToTensor())
         d = DataLoader(self.images, batch_size=1, shuffle=False)
@@ -104,9 +119,9 @@ class DataSet:
 
     def __getitem__(self, idx):
         # Here we have to return the item requested by `idx`. The PyTorch DataLoader class will use this method to make an iterable for training/validation loop.
-
-        img = images[idx]
-        label = labels[idx]
+        
+        img = self.images[idx][0]
+        label = torch.tensor(self.labels.to_numpy()[idx].item())
 
         return img, label
 
@@ -114,26 +129,24 @@ class DataSet:
 print("Loading datasets...")
 
 # Data path
-DataGenerator(0)
+# DataGenerator(0)
 DATA_train_path = DataSet('./Dataset/Train')
 DATA_test_path = DataSet('./Dataset/Test')
 
-# Data normalization
-MyTransform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=1), # Convert image to grayscale
-    transforms.ToTensor(), # Transform from [0,255] uint8 to [0,1] float
-    transforms.Normalize([0.485], [0.224]) # TODO: Normalize to zero mean and unit variance with appropriate parameters
-])
+""" for i in range(53, 63):
+    img, label = DATA_train_path[i]
+    print("label of [{}] is {}".format(i, label)) """
 
-DATA_train = datasets.ImageFolder(root=DATA_train_path, transform=MyTransform)
-DATA_test = datasets.ImageFolder(root=DATA_test_path, transform=MyTransform)
+
+""" DATA_train = datasets.ImageFolder(root='./Dataset/Train', transform=MyTransform)
+DATA_test = datasets.ImageFolder(root='./Dataset/Test', transform=MyTransform) """
 
 print("Done!")
 
 # Create dataloaders
 # TODO: Experiment with different batch sizes
-trainloader = DataLoader(Data_train, batch_size=2, shuffle=True)
-testloader = DataLoader(Data_test, batch_size=2, shuffle=True)
+trainloader = DataLoader(DATA_train_path, batch_size=1, shuffle=True)
+testloader = DataLoader(DATA_test_path, batch_size=1, shuffle=True)
 
 class Network(nn.Module):
     def __init__(self):
@@ -152,8 +165,8 @@ class Network(nn.Module):
         self.model_resnet.fc = nn.Identity()
         
         # TODO: Design your own FCN
-        self.fc1 = nn.Linear(num_fc_in, 2, bias = 1) # from input of size num_fc_in to output of size ?
-        self.fc2 = nn.Linear(1, 3, bias = 1) # from hidden layer to 3 class scores
+        self.fc1 = nn.Linear(num_fc_in, 3, bias = 1) # from input of size num_fc_in to output of size ?
+        self.fc2 = nn.Linear(3, 3, bias = 1) # from hidden layer to 3 class scores
 
     def forward(self,x):
         # TODO: Design your own network, implement forward pass here
@@ -174,8 +187,8 @@ device = "cuda" if torch.cuda.is_available() else "cpu" # Configure device
 model = Network().to(device)
 criterion = nn.CrossEntropyLoss() # Specify the loss layer (note: CrossEntropyLoss already includes LogSoftMax())
 # TODO: Modify the line below, experiment with different optimizers and parameters (such as learning rate)
-optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=3, weight_decay=1) # Specify optimizer and assign trainable parameters to it, weight_decay is L2 regularization strength (default: lr=1e-2, weight_decay=1e-4)
-num_epochs = 100 # TODO: Choose an appropriate number of training epochs
+optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001, weight_decay=0.0001) # Specify optimizer and assign trainable parameters to it, weight_decay is L2 regularization strength (default: lr=1e-2, weight_decay=1e-4)
+num_epochs = 1 # TODO: Choose an appropriate number of training epochs
 
 def train(model, loader, num_epoch = num_epochs): # Train the model
     print("Start training...")
@@ -202,15 +215,20 @@ def evaluate(model, loader): # Evaluate accuracy on validation / test set
             batch = batch.to(device)
             label = label.to(device)
             pred = model(batch)
+            print("label{}".format(label))
+            print("predict {}".format(np.argmax(pred)))
             correct += (torch.argmax(pred,dim=1)==label).sum().item()
     acc = correct/len(loader.dataset)
+    print("length: {}, correct: {}".format(len(loader.dataset), correct))
     print("Evaluation accuracy: {}".format(acc))
     return acc
     
-""" train(model, trainloader, num_epochs)
+
+
+train(model, trainloader, num_epochs)
 print("Evaluate on test set")
-evaluate(model, testloader) """
+evaluate(model, testloader)
 
 inputs, classes = next(iter(trainloader))
-out = torchvision.utils.make_grid(inputs)
-imshow(out)
+out = utils.make_grid(inputs)
+# plt.imshow(out)
